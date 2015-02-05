@@ -79,54 +79,93 @@
         }
  
         function startDemo() {
-            canvas = document.getElementById("thecanvas");
+            canvas = document.getElementById("cubo3d");
             if( canvas && canvas.getContext ) {
                 ctx = canvas.getContext("2d");
-                setInterval(loop,33);
+                setInterval(loop,20);
             }
         }
  
         function loop() {
-            var t = new Array();
- 
-            ctx.clearRect(0,0,400,250);
- 
-            for( var i = 0; i < vertices.length; i++ ) {
-                var v = vertices[i];
-                var r = v.rotateX(angle).rotateY(angle);
-                var p = r.project(400,250,200,4);
-                t.push(p)
+            if(angle <= 420){
+                var t = new Array();
+     
+                ctx.clearRect(0,0,400,250);
+     
+                for( var i = 0; i < vertices.length; i++ ) {
+                    var v = vertices[i];
+                    var r = mostrarcara(v, 6);
+                    var p = r.project(400,250,200,4);
+                    t.push(p)
+                }
+     
+                var avg_z = new Array();
+     
+                for( var i = 0; i < faces.length; i++ ) {
+                    var f = faces[i];
+                    avg_z[i] = {"index":i, "z":(t[f[0]].z + t[f[1]].z + t[f[2]].z + t[f[3]].z) / 4.0};
+                }
+     
+                avg_z.sort(function(a,b) {
+                    return b.z - a.z;
+                });
+     
+                for( var i = 0; i < faces.length; i++ ) {
+                    var f = faces[avg_z[i].index]
+     
+                    ctx.fillStyle = arrayToRGB(colors[avg_z[i].index]);
+                    ctx.beginPath()
+                    ctx.moveTo(t[f[0]].x,t[f[0]].y)
+                    ctx.lineTo(t[f[1]].x,t[f[1]].y)
+                    ctx.lineTo(t[f[2]].x,t[f[2]].y)
+                    ctx.lineTo(t[f[3]].x,t[f[3]].y)
+                    ctx.closePath()
+                    ctx.fill()
+                }
+                angle += 2
             }
- 
-            var avg_z = new Array();
- 
-            for( var i = 0; i < faces.length; i++ ) {
-                var f = faces[i];
-                avg_z[i] = {"index":i, "z":(t[f[0]].z + t[f[1]].z + t[f[2]].z + t[f[3]].z) / 4.0};
-            }
- 
-            avg_z.sort(function(a,b) {
-                return b.z - a.z;
-            });
- 
-            for( var i = 0; i < faces.length; i++ ) {
-                var f = faces[avg_z[i].index]
- 
-                ctx.fillStyle = arrayToRGB(colors[avg_z[i].index]);
-                ctx.beginPath()
-                ctx.moveTo(t[f[0]].x,t[f[0]].y)
-                ctx.lineTo(t[f[1]].x,t[f[1]].y)
-                ctx.lineTo(t[f[2]].x,t[f[2]].y)
-                ctx.lineTo(t[f[3]].x,t[f[3]].y)
-                ctx.closePath()
-                ctx.fill()
-            }
-            angle += 2
         }
+
+        /**
+        /* Aquí empiezan las restricciones para hacer rotar el dado a nuestro gusto,
+        /* yo realice prueba a 420 grados para saber que cara quedaba con una función de 4 
+        /* variables
+        **/
+
+        function mostrarcara(punto3d, cara){
+            switch(cara){
+                //Front
+                case 1:
+                    return punto3d.rotateZ(angle).rotateY(angle).rotateZ(angle).rotateX(angle);
+                    break;
+                //Back
+                case 2:
+                    return punto3d.rotateX(angle).rotateZ(angle).rotateY(angle).rotateY(angle);
+                    break;
+                //Right
+                case 3:
+                    return punto3d.rotateX(angle).rotateX(angle).rotateY(angle).rotateY(angle);
+                    break;
+                //Left
+                case 4:
+                    return punto3d.rotateZ(angle).rotateX(angle).rotateZ(angle).rotateX(angle);
+                    break;
+                //Top
+                case 5:
+                    return punto3d.rotateY(angle).rotateY(angle).rotateX(angle).rotateX(angle);
+                    break;
+                //Bottom
+                case 6:
+                    return punto3d.rotateX(angle).rotateY(angle).rotateY(angle).rotateY(angle);
+                    break;
+            }
+            return punto3d;
+        }
+
     </script>
 </head>
 <body>
-        <canvas id="thecanvas" width="400" height="250">
+        <canvas id="cubo3d" width="400" height="250">
         Your browser does not support the HTML5 canvas element. <a href=#>Click here</a> to watch the video.
     	</canvas>
     </body>
